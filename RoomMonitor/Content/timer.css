@@ -1,0 +1,40 @@
+﻿body {
+    background-color: black;
+}
+
+.timer {
+    position: absolute;
+    color: red;
+    font-family: 'digital-clock-font';
+    font-size: 900%;
+    white-space:nowrap;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translateX(-50%) translateY(-50%);
+    -webkit-transition: font-size 1s, top 2s;
+}
+
+.timer.shrunk {
+    font-size: 500%;
+    top: 90%;
+}
+
+
+@font-face {
+    font-family: 'digital-clock-font';
+    src: url('../fonts/digital-dream/DIGITALDREAM.ttf')
+}
+
+.clue {
+    position: absolute;
+    color: white;
+    font-size: 500%;
+    left: 50%;
+    top: -50%;
+    -webkit-transform: translateX(-50%) translateY(0);
+    -webkit-transition: top 1.5s;
+}
+
+.clue.shown {
+    top: 10%;
+}

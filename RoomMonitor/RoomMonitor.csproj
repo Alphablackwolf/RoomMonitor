@@ -157,12 +157,22 @@
   <ItemGroup>
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\timer.css" />
     <Content Include="favicon.ico" />
+    <Content Include="fonts\digital-dream\pizzadude.dk License.txt" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="fonts\digital-dream\DIGITALDREAM.ttf" />
+    <Content Include="fonts\digital-dream\DIGITALDREAMFAT.ttf" />
+    <Content Include="fonts\digital-dream\DIGITALDREAMFATNARROW.ttf" />
+    <Content Include="fonts\digital-dream\DIGITALDREAMFATSKEW.ttf" />
+    <Content Include="fonts\digital-dream\DIGITALDREAMFATSKEWNARROW.ttf" />
+    <Content Include="fonts\digital-dream\DIGITALDREAMNARROW.ttf" />
+    <Content Include="fonts\digital-dream\DIGITALDREAMSKEW.ttf" />
+    <Content Include="fonts\digital-dream\DIGITALDREAMSKEWNARROW.ttf" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />

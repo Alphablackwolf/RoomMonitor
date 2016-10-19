@@ -12,11 +12,38 @@
     <script type="text/javascript">
     $(function () {
         var roomHub = $.connection.roomHub;
-        $.connection.hub.start().done(function () {
+        roomHub.connection.start().done(function () {
             $('.initiateButton').click(function (event) {
                 var roomId = $(event.target).data('roomid');
                 var startMinutes = $('input[Name="StartMinutes"][data-roomid="'+roomId+'"]').val();
-                roomHub.server.initiateTimer(roomId, startMinutes).done(console.log('test'));
+                roomHub.server.initiateTimer(roomId, startMinutes);
+            });
+            $('.startPauseButton').click(function (event) {
+                var roomId = $(event.target).data('roomid');
+                var isGoing = $(event.target).data('going');
+                if (isGoing) {
+                    $(event.target).text("Start");
+                    $(event.target).data('going', false);
+                    roomHub.server.pauseTimer(roomId);
+                } else {
+                    $(event.target).text("Pause");
+                    $(event.target).data('going', true);
+                    roomHub.server.startTimer(roomId);
+                }
+            });
+            $('.showTextClue').click(function (event) {
+                var roomId = $(event.target).data('roomid');
+                var isGoing = $(event.target).data('going');
+                if (isGoing) {
+                    $(event.target).text("Show Clue");
+                    $(event.target).data('going', false);
+                    roomHub.server.hideTextClue(roomId);
+                } else {
+                    $(event.target).text("Hide Clue");
+                    $(event.target).data('going', true);
+                    var clueText = $('textarea[name="TextClue"][data-roomid="' + roomId + '"]').val();
+                    roomHub.server.showTextClue(roomId, clueText);
+                }
             });
         });
     });

@@ -3,28 +3,96 @@
     Layout = null;
     ViewData["Title"] = Model.Name;
 }
-
+<link rel="stylesheet" type="text/css" href="~/Content/timer.css"/>
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
-            <div class="hours"></div>
-            <div class="minutes"></div>
-            <div class="seconds"></div>
-            <div class="milliseconds"></div>
+            <div class="clue"></div>
+            <div class="timer">
+                <span class="hours"></span>:<span class="minutes"></span>:<span class="seconds"></span>:<span class="milliseconds"></span>
+            </div>
         </div>
     </div>
 </div>
-    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
-    <script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
-    <script src="~/signalr/hubs"></script>
-    <script>
-        $(function () {
-            var roomHub = $.connection.roomHub;
-            roomHub.client.initiateTimer = function (startMinutes) {
-                var hours = Math.floor(startMinutes / 60);
-                var minutes = startMinutes % 60;
-                $('.hours').innerHTML = hours;
-                $('.minutes').innerHTML = minutes;
-            };
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+<script src="~/signalr/hubs"></script>
+<script>
+    $(function () {
+        var roomHub = $.connection.roomHub;
+        roomHub.client.initiateTimer = function (startMinutes) {
+            setTimeInMinutes(startMinutes);
+        };
+        roomHub.client.startTimer = function (endDateTime) {
+            endDateTime = new Date(Date.parse(endDateTime));
+            startTimer(endDateTime);
+        };
+        roomHub.client.pauseTimer = function () {
+            pauseTimer();
+        };
+        roomHub.client.showTextClue = function (text) {
+            $('.timer').addClass('shrunk');
+            $('.clue').text(text);
+            $('.clue').addClass('shown');
+        };
+        roomHub.client.hideTextClue = function () {
+            $('.clue').removeClass('shown');
+            $('.timer').removeClass('shrunk');
+            setTimeout(function() { $('.clue').text(''); }, 1000);
+
+        };
+        $.connection.hub.qs = 'id=' + @Model.Id;
+        roomHub.connection.start(function() {console.log('connection started!')});
+        setTimeInMinutes(@Model.StartMinutes);
+    });
+
+    function setTimeInMinutes(totalMinutes) {
+        var hours = Math.floor(totalMinutes / 60);
+        var minutes = totalMinutes % 60;
+        setTime(hours, minutes, 0, 0);
+    }
+
+    var timeInterval;
+
+    function startTimer(endDateTime) {
+
+        if (timeInterval) clearInterval(timeInterval);
+        timeInterval = setInterval(function() {
+            setRemainingTime(endDateTime);
+            if (Date.parse(endDateTime) - Date.parse(new Date()) <= 0) {
+                clearInterval(timeInterval);
+                endTime();
+            }
         });
-    </script>
+    }
+
+    function pauseTimer() {
+        if (timeInterval) clearInterval(timeInterval);
+    }
+
+    function setRemainingTime(endDateTime) {
+        var millisecondsRemaining = endDateTime - new Date();
+        var hours = Math.floor(millisecondsRemaining / 1000 / 60 / 60);
+        var minutes = Math.floor((millisecondsRemaining / 1000 / 60) % 60);
+        var seconds = Math.floor((millisecondsRemaining / 1000) % 60);
+        var milliseconds = millisecondsRemaining % 1000;
+        setTime(hours, minutes, seconds, milliseconds);
+    }
+
+    function setTime(hours, minutes, seconds, milliseconds) {
+        $('.hours').text(pad(hours,2));
+        $('.minutes').text(pad(minutes,2));
+        $('.seconds').text(pad(seconds, 2));
+        $('.milliseconds').text(pad(milliseconds,3));
+    }
+
+    function endTime() {
+        setTime(0, 0, 0, 0);
+    }
+
+    function pad(n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    }
+</script>

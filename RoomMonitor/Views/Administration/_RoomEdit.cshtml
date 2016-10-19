@@ -8,6 +8,15 @@
     </div>
     <div class="col-md-5">
         <button class="initiateButton" data-roomid="@Model.Id">Initiate</button>
+        <button class="startPauseButton" data-roomid="@Model.Id" data-going="false">Start</button>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        @Html.TextArea("TextClue", new {  data_roomId = Model.Id})
+    </div>
+    <div class="col-md-6">
+        <button class="showTextClue" data-roomid="@Model.Id" data-going="false">Show Clue</button>
     </div>
 </div>
 

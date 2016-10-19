@@ -14,11 +14,6 @@ namespace RoomMonitor
                 "{controller}/{action}/{id}",
                 new { controller = "Administration", action = "Index", id = UrlParameter.Optional }
             );
-            routes.MapRoute(
-                "Room",
-                "Room/{id}",
-                new {controller = "Room", action = "Index", id = UrlParameter.Optional}
-            );
         }
     }
 }
