@@ -1,0 +1,24 @@
+﻿@model IEnumerable<RoomMonitor.Models.RoomViewModel>
+<div class="container-fluid">
+    @foreach (var room in Model)
+    {
+        @Html.Partial("_RoomEdit", room)
+    }
+</div>
+
+@section scripts {
+<script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+<script src="~/signalr/hubs"></script>
+    <script type="text/javascript">
+    $(function () {
+        var roomHub = $.connection.roomHub;
+        $.connection.hub.start().done(function () {
+            $('.initiateButton').click(function (event) {
+                var roomId = $(event.target).data('roomid');
+                var startMinutes = $('input[Name="StartMinutes"][data-roomid="'+roomId+'"]').val();
+                roomHub.server.initiateTimer(roomId, startMinutes).done(console.log('test'));
+            });
+        });
+    });
+    </script>
+}

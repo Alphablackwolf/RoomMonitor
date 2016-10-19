@@ -1,0 +1,30 @@
+﻿@model RoomMonitor.Models.RoomViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="hours"></div>
+            <div class="minutes"></div>
+            <div class="seconds"></div>
+            <div class="milliseconds"></div>
+        </div>
+    </div>
+</div>
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script>
+        $(function () {
+            var roomHub = $.connection.roomHub;
+            roomHub.client.initiateTimer = function (startMinutes) {
+                var hours = Math.floor(startMinutes / 60);
+                var minutes = startMinutes % 60;
+                $('.hours').innerHTML = hours;
+                $('.minutes').innerHTML = minutes;
+            };
+        });
+    </script>

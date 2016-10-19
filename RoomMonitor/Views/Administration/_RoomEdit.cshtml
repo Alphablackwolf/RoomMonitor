@@ -1,0 +1,13 @@
+﻿@model RoomMonitor.Models.RoomViewModel
+<div class="row">
+    <div class="col-md-4">
+        @Model.Name
+    </div>
+    <div class="col-md-3">
+        @Html.EditorFor(m => m.StartMinutes, new { htmlAttributes = new { data_roomId = Model.Id } })
+    </div>
+    <div class="col-md-5">
+        <button class="initiateButton" data-roomid="@Model.Id">Initiate</button>
+    </div>
+</div>
+
