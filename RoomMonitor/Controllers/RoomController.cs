@@ -8,12 +8,14 @@ namespace RoomMonitor.Controllers
         // GET: Room
         public ActionResult Index(int id)
         {
-            var model = new RoomViewModel
+            var model = new RoomViewModel();
+            using (var db = new RoomMonitorContext())
             {
-                Id = id,
-                Name = "Big Room",
-                StartMinutes = 60
-            };
+                var room = db.Rooms.Find(id);
+                model.Id = id;
+                model.Name = room.Name;
+                model.StartMinutes = room.DefaultStartMinutes;
+            }
             return View(model);
         }
     }

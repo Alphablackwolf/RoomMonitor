@@ -19,6 +19,9 @@
     top: 90%;
 }
 
+.hidden {
+    display: none;
+}
 
 @font-face {
     font-family: 'digital-clock-font';
@@ -30,7 +33,7 @@
     color: white;
     font-size: 500%;
     left: 50%;
-    top: -50%;
+    top: -90%;
     -webkit-transform: translateX(-50%) translateY(0);
     -webkit-transition: top 1.5s;
 }

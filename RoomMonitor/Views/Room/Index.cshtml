@@ -3,7 +3,7 @@
     Layout = null;
     ViewData["Title"] = Model.Name;
 }
-<link rel="stylesheet" type="text/css" href="~/Content/timer.css"/>
+<link rel="stylesheet" type="text/css" href="~/Content/timer.css" />
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
@@ -21,13 +21,19 @@
     $(function () {
         var roomHub = $.connection.roomHub;
         roomHub.client.initiateTimer = function (startMinutes) {
+            if (flashTimeInterval) clearInterval(flashTimeInterval);
+            $('.timer').removeClass('hidden');
             setTimeInMinutes(startMinutes);
         };
         roomHub.client.startTimer = function (endDateTime) {
+            if (flashTimeInterval) clearInterval(flashTimeInterval);
+            $('.timer').removeClass('hidden');
             endDateTime = new Date(Date.parse(endDateTime));
             startTimer(endDateTime);
         };
         roomHub.client.pauseTimer = function () {
+            if (flashTimeInterval) clearInterval(flashTimeInterval);
+            $('.timer').removeClass('hidden');
             pauseTimer();
         };
         roomHub.client.showTextClue = function (text) {
@@ -39,10 +45,27 @@
             $('.clue').removeClass('shown');
             $('.timer').removeClass('shrunk');
             setTimeout(function() { $('.clue').text(''); }, 1000);
-
+        };
+        roomHub.client.playAudio = function(audioPath) {
+            new Audio(audioPath).play();
+        };
+        roomHub.client.showImage = function(imagePath) {
+            $('.timer').addClass('shrunk');
+            $('.clue').prepend($('<img>', { id: 'imageClue', src:imagePath}));
+            $('.clue').addClass('shown');
+        };
+        roomHub.client.hideImage = function() {
+            $('.clue').removeClass('shown');
+            $('.timer').removeClass('shrunk');
+            setTimeout(function() {
+                $('#imageClue').remove();
+            }, 1000);
         };
         $.connection.hub.qs = 'id=' + @Model.Id;
-        roomHub.connection.start(function() {console.log('connection started!')});
+        roomHub.connection.start(function() {
+            console.log('connection started!');
+            roomHub.server.updateRoom(@Model.Id);
+        });
         setTimeInMinutes(@Model.StartMinutes);
     });
 
@@ -55,13 +78,13 @@
     var timeInterval;
 
     function startTimer(endDateTime) {
-
+        if (flashTimeInterval) clearInterval(flashTimeInterval);
         if (timeInterval) clearInterval(timeInterval);
         timeInterval = setInterval(function() {
             setRemainingTime(endDateTime);
             if (Date.parse(endDateTime) - Date.parse(new Date()) <= 0) {
-                clearInterval(timeInterval);
                 endTime();
+                clearInterval(timeInterval);
             }
         });
     }
@@ -86,8 +109,20 @@
         $('.milliseconds').text(pad(milliseconds,3));
     }
 
+    var flashTimeInterval;
+
     function endTime() {
         setTime(0, 0, 0, 0);
+        if (flashTimeInterval) clearInterval(flashTimeInterval);
+        flashTimeInterval = setInterval(function() {
+            if ($('.timer').hasClass('hidden')) {
+                $('.timer').removeClass('hidden');
+            } else {
+                $('.timer').addClass('hidden');
+            }
+        },
+            500);
+        $.connection.roomHub.server.timerFinished(@Model.Id);
     }
 
     function pad(n, width, z) {

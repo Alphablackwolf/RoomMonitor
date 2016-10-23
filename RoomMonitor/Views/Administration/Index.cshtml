@@ -2,50 +2,161 @@
 <div class="container-fluid">
     @foreach (var room in Model)
     {
-        @Html.Partial("_RoomEdit", room)
+        <div class="room">
+            @Html.Partial("_RoomEdit", room)
+        </div>
     }
 </div>
 
 @section scripts {
-<script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
-<script src="~/signalr/hubs"></script>
+    <script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+    <script src="~/signalr/hubs"></script>
     <script type="text/javascript">
-    $(function () {
-        var roomHub = $.connection.roomHub;
-        roomHub.connection.start().done(function () {
-            $('.initiateButton').click(function (event) {
-                var roomId = $(event.target).data('roomid');
-                var startMinutes = $('input[Name="StartMinutes"][data-roomid="'+roomId+'"]').val();
-                roomHub.server.initiateTimer(roomId, startMinutes);
-            });
-            $('.startPauseButton').click(function (event) {
-                var roomId = $(event.target).data('roomid');
-                var isGoing = $(event.target).data('going');
-                if (isGoing) {
-                    $(event.target).text("Start");
-                    $(event.target).data('going', false);
-                    roomHub.server.pauseTimer(roomId);
-                } else {
-                    $(event.target).text("Pause");
-                    $(event.target).data('going', true);
-                    roomHub.server.startTimer(roomId);
+        $(function() {
+            var roomHub = $.connection.roomHub;
+            roomHub.client.initiateAdminTimer = function(roomId, startMinutes) {
+                setTimeInMinutes(roomId, startMinutes);
+            }
+            roomHub.client.startAdminTimer = function(roomId, endDateTime) {
+                endDateTime = new Date(Date.parse(endDateTime));
+                startTimer(roomId, endDateTime);
+            };
+            roomHub.client.pauseAdminTimer = function(roomId) {
+                pauseTimer(roomId);
+            };
+            roomHub.connection.start()
+                .done(function() {
+                    $('.initiateButton')
+                        .click(function(event) {
+                            var roomId = $(event.target).data('roomid');
+                            var startMinutes = $('input[Name="StartMinutes"][data-roomid="' + roomId + '"]').val();
+                            roomHub.server.initiateTimer(roomId, startMinutes);
+                        });
+                    $('.startPauseButton')
+                        .click(function(event) {
+                            var roomId = $(event.target).data('roomid');
+                            var isGoing = $(event.target).data('going');
+                            if (isGoing) {
+                                $(event.target).text("Start");
+                                $(event.target).data('going', false);
+                                roomHub.server.pauseTimer(roomId);
+                            } else {
+                                $(event.target).text("Pause");
+                                $(event.target).data('going', true);
+                                roomHub.server.startTimer(roomId);
+                            }
+                        });
+                    $('.showTextClue')
+                        .click(function(event) {
+                            var roomId = $(event.target).data('roomid');
+                            var isGoing = $(event.target).data('going');
+                            if (isGoing) {
+                                $(event.target).text("Show Clue");
+                                $(event.target).data('going', false);
+                                roomHub.server.hideTextClue(roomId);
+                            } else {
+                                $(event.target).text("Hide Clue");
+                                $(event.target).data('going', true);
+                                var clueText = $('textarea[name="TextClue"][data-roomid="' + roomId + '"]').val();
+                                roomHub.server.showTextClue(roomId, clueText);
+                            }
+                        });
+                    $('.playAudio')
+                        .click(function(event) {
+                            var roomId = $(event.target).data('roomid');
+                            var audio = $('select[name="audioFile"][data-roomid="' + roomId + '"] option:selected')
+                                .val();
+                            roomHub.server.playAudio(roomId, audio);
+                        });
+                    $('.showImage')
+                        .click(function(event) {
+                            var roomId = $(event.target).data('roomid');
+                            var isGoing = $(event.target).data('going');
+                            if (isGoing) {
+                                $(event.target).text("Show Image");
+                                $(event.target).data('going', false);
+                                roomHub.server.hideImage(roomId);
+                            } else {
+                                $(event.target).text("Hide Image");
+                                $(event.target).data('going', true);
+                                var image = $('select[name="imageFile"][data-roomid="' + roomId + '"] option:selected')
+                                    .val();
+                                roomHub.server.showImage(roomId, image);
+                            }
+                        });
+                    startInterval();
+                });
+
+            function setTimeInMinutes(roomId, totalMinutes) {
+                var hours = Math.floor(totalMinutes / 60);
+                var minutes = totalMinutes % 60;
+                setTime(roomId, hours, minutes, 0, 0);
+            }
+
+            var timeInterval;
+            var rooms = {};
+
+            function startInterval() {
+                for (var roomId = 1; roomId <= @Model.Count(); roomId++) {
+                    rooms[roomId] = {};
                 }
-            });
-            $('.showTextClue').click(function (event) {
-                var roomId = $(event.target).data('roomid');
-                var isGoing = $(event.target).data('going');
-                if (isGoing) {
-                    $(event.target).text("Show Clue");
-                    $(event.target).data('going', false);
-                    roomHub.server.hideTextClue(roomId);
-                } else {
-                    $(event.target).text("Hide Clue");
-                    $(event.target).data('going', true);
-                    var clueText = $('textarea[name="TextClue"][data-roomid="' + roomId + '"]').val();
-                    roomHub.server.showTextClue(roomId, clueText);
+                if (timeInterval) clearInterval(timeInterval);
+                timeInterval = setInterval(function() {
+                    setAllTimers();
+                });
+            }
+
+            function setAllTimers() {
+                for (var roomId = 1; roomId <= @Model.Count(); roomId++) {
+                    var room = rooms[roomId];
+                    if (room.timerPaused === false && room.currentEndDate) {
+                        if (Date.parse(room.currentEndDate) - Date.parse(new Date()) <= 0) {
+                            room.timerFinished = true;
+                            setTimeFinished(roomId);
+                        } else {
+                            setRemainingTime(roomId, room.currentEndDate);
+                        }
+
+                    }
                 }
-            });
+            }
+
+            function startTimer(roomId, endDateTime) {
+                rooms[roomId].timerPaused = false;
+                rooms[roomId].currentEndDate = endDateTime;
+            }
+
+            function pauseTimer(roomId) {
+                rooms[roomId].timerPaused = true;
+            }
+
+            function setRemainingTime(roomId, endDateTime) {
+                var millisecondsRemaining = endDateTime - new Date();
+                var hours = Math.floor(millisecondsRemaining / 1000 / 60 / 60);
+                var minutes = Math.floor((millisecondsRemaining / 1000 / 60) % 60);
+                var seconds = Math.floor((millisecondsRemaining / 1000) % 60);
+                var milliseconds = millisecondsRemaining % 1000;
+                setTime(roomId, hours, minutes, seconds, milliseconds);
+            }
+
+            function setTime(roomId, hours, minutes, seconds, milliseconds) {
+                $('.admin-timer[data-roomid="' + roomId + '"] .hours').text(pad(hours,2));
+                $('.admin-timer[data-roomid="' + roomId + '"] .minutes').text(pad(minutes,2));
+                $('.admin-timer[data-roomid="' + roomId + '"] .seconds').text(pad(seconds, 2));
+                $('.admin-timer[data-roomid="' + roomId + '"] .milliseconds').text(pad(milliseconds,3));
+            }
+
+            function setTimeFinished(roomId) {
+                setTime(roomId, 0, 0, 0, 0);
+                rooms[roomId].currentEndDate = false;
+            }
+
+            function pad(n, width, z) {
+                z = z || '0';
+                n = n + '';
+                return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+            }
+
         });
-    });
     </script>
 }

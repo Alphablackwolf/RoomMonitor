@@ -1,22 +1,55 @@
 ﻿@model RoomMonitor.Models.RoomViewModel
 <div class="row">
     <div class="col-md-4">
-        @Model.Name
+        <h3>@Model.Name</h3>
     </div>
-    <div class="col-md-3">
-        @Html.EditorFor(m => m.StartMinutes, new { htmlAttributes = new { data_roomId = Model.Id } })
+    <div class="col-md-4">
+        <br />
+        @Html.ActionLink(Model.Name + " Countdown", "Index", "Room", new {id = Model.Id}, null)
     </div>
-    <div class="col-md-5">
-        <button class="initiateButton" data-roomid="@Model.Id">Initiate</button>
-        <button class="startPauseButton" data-roomid="@Model.Id" data-going="false">Start</button>
+    <div class="col-md-4">
+        <br/>
+        <div class="admin-timer" data-roomid="@Model.Id">
+            <span class="hours"></span>:<span class="minutes"></span>:<span class="seconds"></span>:<span class="milliseconds"></span>
+        </div>
+    </div>
+</div> 
+<div class="row">
+    <div class="col-md-4">
+        @Html.LabelFor(m => m.StartMinutes, "Start Minutes")
+        @Html.EditorFor(m => m.StartMinutes, new { htmlAttributes = new { data_roomId = Model.Id, @class = "form-control" } })
+    </div>
+    <div class="col-md-2">
+        <br/>
+        <button class="btn initiateButton" data-roomid="@Model.Id">Reset</button>
+        <button class="btn startPauseButton" data-roomid="@Model.Id" data-going="false">Start</button>
+    </div>
+    <div class="col-md-4">
+        @Html.Label("Text Clue")
+        @Html.TextArea("TextClue", new {data_roomId = Model.Id, @class="form-control"})
+    </div>
+    <div class="col-md-1">
+        <br/>
+        <button class="btn showTextClue dr" data-roomid="@Model.Id" data-going="false">Show Clue</button>
     </div>
 </div>
 <div class="row">
-    <div class="col-md-6">
-        @Html.TextArea("TextClue", new {  data_roomId = Model.Id})
+    <div class="col-md-4">
+        @Html.Label("Audio")
+        @Html.DropDownList("audioFile", Model.AudioFiles, "Select", new {data_roomId = Model.Id, @class = "form-control" })
+        
     </div>
-    <div class="col-md-6">
-        <button class="showTextClue" data-roomid="@Model.Id" data-going="false">Show Clue</button>
+    <div class="col-md-2">
+        <br/>
+        <button class="btn playAudio" data-roomid="@Model.Id">Play Audio</button>
     </div>
-</div>
+    <div class="col-md-4">
+        @Html.Label("Image")
+        @Html.DropDownList("imageFile", Model.ImageFiles, "Select", new {data_roomId = Model.Id, @class = "form-control" })
+    </div>
+    <div class="col-md-2">
+        <br />
+        <button class="btn showImage" data-roomid="@Model.Id" data-going="false">Show Image</button>
+    </div>
 
+</div>
